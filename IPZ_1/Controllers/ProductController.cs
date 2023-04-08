@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using IPZ_1.Models;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections;
+using IPZ_1.Models.ViewModels;
 
 namespace IPZ_1.Controllers
 {
@@ -19,11 +22,11 @@ namespace IPZ_1.Controllers
 		{
 			IEnumerable<Product> objList = _db.Product;
 
-			foreach(var obj in objList)
+			foreach (var obj in objList)
 			{
 				obj.Category = _db.Category.FirstOrDefault(u => u.ID == obj.CategoryId);
 
-            }
+			}
 
 			return View(objList);
 		}
@@ -32,20 +35,48 @@ namespace IPZ_1.Controllers
 		// GET - CREATE
 		public IActionResult Upsert(int? id)
 		{
-			Product product = new Product();
-			if(id==null)
+			//IEnumerable<SelectListItem> CategoryDropDown = _db.Category.Select(i => new SelectListItem
+			//{
+			//	Text = i.Name,
+			//	Value = i.ID.ToString()
+			//});
+
+			////ViewBag.CategoryDropDown = CategoryDropDown;
+			//ViewData["CategoryDropDown"] = CategoryDropDown;
+
+			//IEnumerable<Category> student = _db.Category;
+			//Test.SerializeJson<Category>("test", student);
+
+
+
+
+			//Product product = new Product();
+
+			PoductVM productVM = new PoductVM()
+			{
+				Product = new Product(),
+				CategotySelectList = _db.Category.Select(i => new SelectListItem
+				{
+					Text = i.Name,
+					Value = i.ID.ToString()
+				})
+			};
+
+
+
+			if (id == null)
 			{
 				// creation
-				return View(product);
+				return View(productVM);
 			}
 			else
 			{
-				product = _db.Product.Find(id);
-				if(product == null) 
+				productVM.Product = _db.Product.Find(id);
+				if (productVM.Product == null)
 				{
 					return NotFound();
 				}
-				return View(product);
+				return View(productVM);
 			}
 		}
 
@@ -89,7 +120,7 @@ namespace IPZ_1.Controllers
 		public IActionResult DeletePost(int? ID)
 		{
 			var obj = _db.Category.Find(ID);
-			if (obj == null) 
+			if (obj == null)
 			{
 				return NotFound();
 			}

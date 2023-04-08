@@ -1,0 +1,26 @@
+[
+  {
+    "__type": "Category:#IPZ_1.Models",
+    "DisplayOrder": "12",
+    "ID": 1,
+    "Name": "test12"
+  },
+  {
+    "__type": "Category:#IPZ_1.Models",
+    "DisplayOrder": "2",
+    "ID": 2,
+    "Name": "tesst2"
+  },
+  {
+    "__type": "Category:#IPZ_1.Models",
+    "DisplayOrder": "3",
+    "ID": 3,
+    "Name": "test3"
+  },
+  {
+    "__type": "Category:#IPZ_1.Models",
+    "DisplayOrder": "4",
+    "ID": 4,
+    "Name": "tesst4"
+  }
+]
