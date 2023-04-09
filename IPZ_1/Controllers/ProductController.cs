@@ -4,29 +4,36 @@ using IPZ_1.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections;
 using IPZ_1.Models.ViewModels;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis;
 
 namespace IPZ_1.Controllers
 {
 	public class ProductController : Controller
 	{
 		private readonly ApplicationDbContext _db;
-
-		public ProductController(ApplicationDbContext db)
+		private readonly IWebHostEnvironment _webHostEnvironment;
+		public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment)
 		{
 			_db = db;
-		}
+			_webHostEnvironment = webHostEnvironment;
+
+        }
 
 		public IActionResult Index()
 		{
-			IEnumerable<Product> objList = _db.Product;
+			IEnumerable<Product> objList = _db.Product.Include(u=>u.Category);
 
-			foreach (var obj in objList)
-			{
-				obj.Category = _db.Category.FirstOrDefault(u => u.ID == obj.CategoryId);
+			//foreach (var obj in objList)
+			//{
+			//	obj.Category = _db.Category.FirstOrDefault(u => u.ID == obj.CategoryId);
 
-			}
+			//}
 
 			return View(objList);
 		}
@@ -83,48 +90,121 @@ namespace IPZ_1.Controllers
 		// POST - CREATE
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Upsert(Category obj)
+		public IActionResult Upsert(PoductVM poductVM)
 		{
 			//server validation
 			if (ModelState.IsValid)
 			{
-				_db.Category.Add(obj);
+				var files = HttpContext.Request.Form.Files;
+				string webRootPath = _webHostEnvironment.WebRootPath;
+
+
+				if(poductVM.Product.Id == 0) 
+				{
+					// create
+					string upload = webRootPath + WC.ImagePath;
+					string fileName = Guid.NewGuid().ToString();
+					string extension = Path.GetExtension(files[0].FileName);
+
+					using(var fileStream = new FileStream(Path.Combine(upload, fileName+ extension), FileMode.Create))
+					{
+						files[0].CopyTo(fileStream);
+					}
+
+					poductVM.Product.Image = fileName + extension;
+
+					_db.Product.Add(poductVM.Product);
+
+				}
+				else
+				{
+					// update
+
+					var objFromDb = _db.Product.AsNoTracking().FirstOrDefault(u => u.Id == poductVM.Product.Id);
+
+					if(files.Count > 0)
+					{
+						string upload = webRootPath + WC.ImagePath;
+						string fileName = Guid.NewGuid().ToString();
+						string extension = Path.GetExtension(files[0].FileName);
+
+						var oldFile = Path.Combine(upload, objFromDb.Image);
+						if(System.IO.File.Exists(oldFile))
+						{
+							System.IO.File.Delete(oldFile);
+						}
+
+						using (var fileStream = new FileStream(Path.Combine(upload, fileName + extension), FileMode.Create))
+						{
+							files[0].CopyTo(fileStream);
+						}
+						poductVM.Product.Image = fileName + extension;
+
+					}
+					else
+					{
+						poductVM.Product.Image = objFromDb.Image;
+
+					}
+					_db.Product.Update(poductVM.Product);
+				}
+
 				_db.SaveChanges();
 				return RedirectToAction("Index");
 			}
-			return View(obj);
+
+
+			poductVM.CategotySelectList = _db.Category.Select(i => new SelectListItem
+			{
+				Text = i.Name,
+				Value = i.ID.ToString()
+			});
+			return View(poductVM);
 		}
 
 
 		// GET - Delete
-		public IActionResult Delete(int ID)
+		public IActionResult Delete(int? ID)
 		{
 			if (ID == null || ID == 0)
 			{
 				return NotFound();
 			}
-			var obj = _db.Category.Find(ID);
-			if (obj == null)
+
+			Product product = _db.Product.Include(u=>u.Category).FirstOrDefault(u=>u.Id == ID);
+			//product.Category = _db.Category.Find(product.Id);
+
+
+			if (product == null)
 			{
 				return NotFound();
 			}
 
 
-			return View(obj);
+			return View(product);
 		}
 
 
 		// POST - Delete
-		[HttpPost]
+		[HttpPost, ActionName("Delete")]
 		[ValidateAntiForgeryToken]
 		public IActionResult DeletePost(int? ID)
 		{
-			var obj = _db.Category.Find(ID);
+			var obj = _db.Product.Find(ID);
 			if (obj == null)
 			{
 				return NotFound();
 			}
-			_db.Category.Remove(obj);
+
+			string upload = _webHostEnvironment.WebRootPath + WC.ImagePath;
+			var oldFile = Path.Combine(upload, obj.Image);
+
+			if (System.IO.File.Exists(oldFile))
+			{
+				System.IO.File.Delete(oldFile);
+			}
+
+			_db.Product.Remove(obj);
 			_db.SaveChanges();
 			return RedirectToAction("Index");
 		}
