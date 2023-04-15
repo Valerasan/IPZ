@@ -42,22 +42,23 @@ namespace IPZ_1.Controllers
 		// GET - CREATE
 		public IActionResult Upsert(int? id)
 		{
-			//IEnumerable<SelectListItem> CategoryDropDown = _db.Category.Select(i => new SelectListItem
-			//{
-			//	Text = i.Name,
-			//	Value = i.ID.ToString()
-			//});
+
 
 			////ViewBag.CategoryDropDown = CategoryDropDown;
 			//ViewData["CategoryDropDown"] = CategoryDropDown;
 
-			//IEnumerable<Category> student = _db.Category;
-			//Test.SerializeJson<Category>("test", student);
+			//List<Test>  student =new List<Test>();
+            //student.Add(new Test("TimeTest", DateTime.Now.ToString()));
+            //student.Add(new Test("Vale23ra", 1212));
+            //student.Add(new Test("Vale564ra", 126547));
 
 
+            List<Test> student = new List<Test>();
+			student = Test.DeserializeJson<Test>("test", student.GetType());
+			student.Add(new Test("TimeTest 2", DateTime.Now.ToString()));
+            Test.SerializeJson<Test>("test", student);
 
 
-			//Product product = new Product();
 
 			PoductVM productVM = new PoductVM()
 			{

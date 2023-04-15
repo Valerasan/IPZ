@@ -43,9 +43,13 @@
 								<a class="nav-link text-dark" asp-area="" asp-controller="Category" asp-action="Index">Category</a>
 								<a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Product</a>
 
-								<div class="dropdown-divider"></div>
-								<a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Create Admin User</a>
-
+								
+								@if(User.IsInRole(WC.AdmineRole))
+								{
+									<div class="dropdown-divider"></div>
+									<a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Create Admin User</a>
+									<a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logs">Logs</a>
+								}
 							</div>
 						</li>
 						<li>
