@@ -30,7 +30,9 @@ namespace IPZ_1
             services.AddDbContext<ApplicationDbContext>(options =>  options.UseSqlServer(
                 Configuration.GetConnectionString("DefaultConection")));
 
-            services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddDefaultTokenProviders().AddDefaultUI()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
             services.AddHttpContextAccessor();
