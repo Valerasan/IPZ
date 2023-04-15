@@ -36,6 +36,7 @@ namespace IPZ_1.Controllers
 			return View(homeVM);
 		}
 
+		// GET
 		public IActionResult Details(int id)
 		{
 			List<Favorite> favoriteList = new List<Favorite>();
@@ -65,6 +66,8 @@ namespace IPZ_1.Controllers
 
             return View(DetailsVM);
 		}
+
+		// POSST
 
 		[HttpPost, ActionName("Details")]
 		public IActionResult DetailsPost(int id)

@@ -4,5 +4,8 @@
     {
         public static string ImagePath = @"\images\product\";
         public static string sessionFavorite = "ShoppingFavoriteSession";
+
+        public static string AdmineRole = "Admin";
+        public static string CustomerRole = "Customer";
     }
 }
