@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Identity;
 
 namespace IPZ_1.Controllers
 {
@@ -28,39 +29,17 @@ namespace IPZ_1.Controllers
 		public IActionResult Index()
 		{
 			IEnumerable<Product> objList = _db.Product.Include(u=>u.Category);
-
-			//foreach (var obj in objList)
-			//{
-			//	obj.Category = _db.Category.FirstOrDefault(u => u.ID == obj.CategoryId);
-
-			//}
-
 			return View(objList);
 		}
 
 
-		// GET - CREATE
+		// GET - CREATE/EDIT
 		public IActionResult Upsert(int? id)
 		{
+            
 
 
-			////ViewBag.CategoryDropDown = CategoryDropDown;
-			//ViewData["CategoryDropDown"] = CategoryDropDown;
-
-			//List<Test>  student =new List<Test>();
-            //student.Add(new Test("TimeTest", DateTime.Now.ToString()));
-            //student.Add(new Test("Vale23ra", 1212));
-            //student.Add(new Test("Vale564ra", 126547));
-
-
-            List<Test> student = new List<Test>();
-			student = Test.DeserializeJson<Test>("test", student.GetType());
-			student.Add(new Test("TimeTest 2", DateTime.Now.ToString()));
-            Test.SerializeJson<Test>("test", student);
-
-
-
-			PoductVM productVM = new PoductVM()
+            PoductVM productVM = new PoductVM()
 			{
 				Product = new Product(),
 				CategotySelectList = _db.Category.Select(i => new SelectListItem
@@ -71,30 +50,37 @@ namespace IPZ_1.Controllers
 			};
 
 
-
 			if (id == null)
 			{
-				// creation
-				return View(productVM);
+                // creation
+
+                // return view of product with data
+                Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "GET-CREATE/EDIT"), WC.logsFile, typeof(List<Logs>));
+                return View(productVM);
 			}
 			else
 			{
+				// edit
 				productVM.Product = _db.Product.Find(id);
 				if (productVM.Product == null)
 				{
 					return NotFound();
 				}
-				return View(productVM);
+                // return view of product with data
+                Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "GET-CREATE/EDIT  " + productVM.Product.Name), WC.logsFile, typeof(List<Logs>));
+                return View(productVM);
 			}
 		}
 
-		// POST - CREATE
+		// POST - CREATE/EDIT
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public IActionResult Upsert(PoductVM poductVM)
 		{
-			//server validation
-			if (ModelState.IsValid)
+            
+
+            //server validation
+            if (ModelState.IsValid)
 			{
 				var files = HttpContext.Request.Form.Files;
 				string webRootPath = _webHostEnvironment.WebRootPath;
@@ -151,7 +137,9 @@ namespace IPZ_1.Controllers
 				}
 
 				_db.SaveChanges();
-				return RedirectToAction("Index");
+
+                Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "POST-CREATE/EDIT  " + poductVM.Product.Name), WC.logsFile, typeof(List<Logs>));
+                return RedirectToAction("Index");
 			}
 
 
@@ -167,22 +155,23 @@ namespace IPZ_1.Controllers
 		// GET - Delete
 		public IActionResult Delete(int? ID)
 		{
-			if (ID == null || ID == 0)
+            
+
+
+            if (ID == null || ID == 0)
 			{
 				return NotFound();
 			}
 
 			Product product = _db.Product.Include(u=>u.Category).FirstOrDefault(u=>u.Id == ID);
-			//product.Category = _db.Category.Find(product.Id);
-
 
 			if (product == null)
 			{
 				return NotFound();
 			}
 
-
-			return View(product);
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "GET-DELETE  " + product.Name), WC.logsFile, typeof(List<Logs>));
+            return View(product);
 		}
 
 
@@ -191,7 +180,9 @@ namespace IPZ_1.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult DeletePost(int? ID)
 		{
-			var obj = _db.Product.Find(ID);
+            
+
+            var obj = _db.Product.Find(ID);
 			if (obj == null)
 			{
 				return NotFound();
@@ -207,7 +198,9 @@ namespace IPZ_1.Controllers
 
 			_db.Product.Remove(obj);
 			_db.SaveChanges();
-			return RedirectToAction("Index");
+
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "POST-DELETE  " + obj.Name), WC.logsFile, typeof(List<Logs>));
+            return RedirectToAction("Index");
 		}
 
 	}

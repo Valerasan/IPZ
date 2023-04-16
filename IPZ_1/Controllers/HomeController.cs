@@ -33,21 +33,27 @@ namespace IPZ_1.Controllers
                 Products = _db.Product.Include(u => u.Category),
                 Categories = _db.Category
             };
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | GET-INDEX"), WC.logsFile, typeof(List<Logs>));
 
             return View(homeVM);
         }
 
         public IActionResult Logs()
         {
-            List<Test> logs = new List<Test>();
-            logs = Test.DeserializeJson<Test>("test", logs.GetType());
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | GET-LOGS"), WC.logsFile, typeof(List<Logs>));
+
+            List<Logs> logs = new List<Logs>();
+            logs = Serialize.DeserializeJson<Logs>(WC.logsFile, typeof(List<Logs>));
             return View(logs);
         }
 
 
-        // GET
+        // GET 
         public IActionResult Details(int id)
         {
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | GET-DETAILS"), WC.logsFile, typeof(List<Logs>));
+
+
             List<Favorite> favoriteList = new List<Favorite>();
             if (HttpContext.Session.Get<IEnumerable<Favorite>>(WC.sessionFavorite) != null
                 && HttpContext.Session.Get<IEnumerable<Favorite>>(WC.sessionFavorite).Count() > 0)
@@ -76,7 +82,7 @@ namespace IPZ_1.Controllers
             return View(DetailsVM);
         }
 
-        // POSST
+        // POST
 
         [HttpPost, ActionName("Details")]
         public IActionResult DetailsPost(int id)
@@ -90,11 +96,14 @@ namespace IPZ_1.Controllers
             favoriteList.Add(new Favorite { ProductId = id });
             HttpContext.Session.Set(WC.sessionFavorite, favoriteList);
 
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | POST-DETAILS"), WC.logsFile, typeof(List<Logs>));
+
+
             return RedirectToAction(nameof(Index));
         }
 
 
-        public IActionResult RemoveFromCart(int id)
+        public IActionResult RemoveFromFavorites(int id)
         {
             List<Favorite> favoriteList = new List<Favorite>();
             if (HttpContext.Session.Get<IEnumerable<Favorite>>(WC.sessionFavorite) != null
@@ -107,6 +116,8 @@ namespace IPZ_1.Controllers
             {
                 favoriteList.Remove(itemToRemove);
             }
+
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | GET-RemoveFromFavorites  ProductId:" + itemToRemove.ProductId), WC.logsFile, typeof(List<Logs>));
 
             HttpContext.Session.Set(WC.sessionFavorite, favoriteList);
             return RedirectToAction(nameof(Index));

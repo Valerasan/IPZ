@@ -1,17 +1,11 @@
-﻿@model List<IPZ_1.Test>
+﻿@model List<IPZ_1.Logs>
 
 <div>
     @foreach(var item in Model)
     {
         <div>
-            @item.Name @item.Action
+            @item.Time | @item.UserName | @item.Action
             <hr />
-        </div>
-
-            
-            
-
-
-        
+        </div> 
     }
 </div>

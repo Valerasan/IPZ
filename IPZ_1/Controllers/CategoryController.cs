@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using IPZ_1.Models;
 using System.Collections.Generic;
+using System;
 
 namespace IPZ_1.Controllers
 {
@@ -24,7 +25,9 @@ namespace IPZ_1.Controllers
 		// GET - CREATE
 		public IActionResult Create()
 		{
-			return View();
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | GET-CREATE"), WC.logsFile, typeof(List<Logs>));
+
+            return View();
 		}
 
 		// POST - CREATE
@@ -32,14 +35,19 @@ namespace IPZ_1.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult Create(Category obj)
 		{
-			//server validation
-			if (ModelState.IsValid)
+
+            //server validation
+            if (ModelState.IsValid)
 			{
 				_db.Category.Add(obj);
 				_db.SaveChanges();
-				return RedirectToAction("Index");
+                Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | POST-CREATE  CategoryName:" + obj.Name), WC.logsFile, typeof(List<Logs>));
+
+                return RedirectToAction("Index");
 			}
-			return View(obj);
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | POST-CREATE"), WC.logsFile, typeof(List<Logs>));
+
+            return View(obj);
 		}
 
 
@@ -56,8 +64,9 @@ namespace IPZ_1.Controllers
 				return NotFound();
 			}
 
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | GET-EDIT"), WC.logsFile, typeof(List<Logs>));
 
-			return View(obj);
+            return View(obj);
 		}
 
 
@@ -71,7 +80,10 @@ namespace IPZ_1.Controllers
 			{
 				_db.Category.Update(obj);
 				_db.SaveChanges();
-				return RedirectToAction("Index");
+                Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | POST-EDIT"), WC.logsFile, typeof(List<Logs>));
+
+
+                return RedirectToAction("Index");
 			}
 			return View(obj);
 		}
@@ -89,8 +101,9 @@ namespace IPZ_1.Controllers
 				return NotFound();
 			}
 
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | GET-DELETE"), WC.logsFile, typeof(List<Logs>));
 
-			return View(obj);
+            return View(obj);
 		}
 
 
@@ -106,7 +119,9 @@ namespace IPZ_1.Controllers
 			}
 			_db.Category.Remove(obj);
 			_db.SaveChanges();
-			return RedirectToAction("Index");
+            Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "CategoryController | POST-DELETE  Deleted category" + obj.Name), WC.logsFile, typeof(List<Logs>));
+
+            return RedirectToAction("Index");
 		}
 
 	}
