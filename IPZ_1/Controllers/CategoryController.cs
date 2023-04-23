@@ -116,6 +116,7 @@ namespace IPZ_1.Controllers
 			if (obj == null) 
 			{
 				return NotFound();
+
 			}
 			_db.Category.Remove(obj);
 			_db.SaveChanges();
