@@ -12,6 +12,10 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
+using System.Data.Entity;
+using IPZ_1.Hubs;
 
 namespace IPZ_1.Controllers
 {
@@ -19,12 +23,15 @@ namespace IPZ_1.Controllers
 	{
 		private readonly ApplicationDbContext _db;
 		private readonly IWebHostEnvironment _webHostEnvironment;
-		public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment)
+		private readonly IHubContext<NotificationHub> _hubContext;
+
+		public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment, IHubContext<NotificationHub> hubContext)
 		{
 			_db = db;
 			_webHostEnvironment = webHostEnvironment;
+			_hubContext = hubContext;
 
-        }
+		}
 
 		public IActionResult Index()
 		{
@@ -36,10 +43,10 @@ namespace IPZ_1.Controllers
 		// GET - CREATE/EDIT
 		public IActionResult Upsert(int? id)
 		{
-            
 
+			
 
-            PoductVM productVM = new PoductVM()
+			PoductVM productVM = new PoductVM()
 			{
 				Product = new Product(),
 				CategotySelectList = _db.Category.Select(i => new SelectListItem
@@ -75,12 +82,12 @@ namespace IPZ_1.Controllers
 		// POST - CREATE/EDIT
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Upsert(PoductVM poductVM)
+		public async Task<IActionResult> Upsert(PoductVM poductVM)
 		{
-            
 
-            //server validation
-            if (ModelState.IsValid)
+			await _hubContext.Clients.All.SendAsync("RefreshProducts");
+			//server validation
+			if (ModelState.IsValid)
 			{
 				var files = HttpContext.Request.Form.Files;
 				string webRootPath = _webHostEnvironment.WebRootPath;
@@ -153,12 +160,12 @@ namespace IPZ_1.Controllers
 
 
 		// GET - Delete
-		public IActionResult Delete(int? ID)
+		public async Task<IActionResult> Delete(int? ID)
 		{
-            
 
+			await _hubContext.Clients.All.SendAsync("RefreshProducts");
 
-            if (ID == null || ID == 0)
+			if (ID == null || ID == 0)
 			{
 				return NotFound();
 			}

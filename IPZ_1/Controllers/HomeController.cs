@@ -1,9 +1,11 @@
 ﻿using IPZ_1.Data;
+using IPZ_1.Hubs;
 using IPZ_1.Models;
 using IPZ_1.Models.ViewModels;
 using IPZ_1.Utility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,13 +20,14 @@ namespace IPZ_1.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _db;
+		private readonly IHubContext<NotificationHub> _hubContext;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db)
+		public HomeController(ILogger<HomeController> logger, ApplicationDbContext db, IHubContext<NotificationHub> hubContext)
         {
             _logger = logger;
             _db = db;
-
-        }
+			_hubContext = hubContext;
+		}
 
         public IActionResult Index()
         {
@@ -38,7 +41,16 @@ namespace IPZ_1.Controllers
             return View(homeVM);
         }
 
-        public IActionResult Logs()
+		[HttpPost]
+		public async Task<IActionResult> Index(HomeVM model)
+		{
+
+			await _hubContext.Clients.All.SendAsync("RefreshProducts");
+			return View();
+		}
+
+
+		public IActionResult Logs()
         {
             Serialize.AddLogAction<Logs>(new Logs(DateTime.Now.ToString(), User.Identity.Name, "HomeController | GET-LOGS"), WC.logsFile, typeof(List<Logs>));
 
@@ -85,9 +97,12 @@ namespace IPZ_1.Controllers
         // POST
 
         [HttpPost, ActionName("Details")]
-        public IActionResult DetailsPost(int id)
+        public async Task<IActionResult> DetailsPost(int id)
         {
-            List<Favorite> favoriteList = new List<Favorite>();
+			await _hubContext.Clients.All.SendAsync("RefreshProducts");
+
+
+			List<Favorite> favoriteList = new List<Favorite>();
             if (HttpContext.Session.Get<IEnumerable<Favorite>>(WC.sessionFavorite) != null
                 && HttpContext.Session.Get<IEnumerable<Favorite>>(WC.sessionFavorite).Count() > 0)
             {
